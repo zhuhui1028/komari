@@ -34,6 +34,8 @@ func UploadReport(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("%v", err)})
 		return
 	}
+	delete(data, "token")
+	ws.LatestReport = append(ws.LatestReport, gin.H{data["uuid"].(string): data})
 	//log.Println(string(bodyBytes))
 	c.Request.Body = io.NopCloser(bytes.NewBuffer(bodyBytes)) // Restore the body for further use
 	c.JSON(200, gin.H{"status": "success"})
@@ -125,5 +127,7 @@ func WebSocketReport(c *gin.Context) {
 		if err != nil {
 			conn.WriteJSON(gin.H{"status": "error", "error": fmt.Sprintf("%v", err)})
 		}
+		delete(data, "token")
+		ws.LatestReport = append(ws.LatestReport, gin.H{data["uuid"].(string): data})
 	}
 }
