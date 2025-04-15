@@ -1,7 +1,7 @@
 package api
 
 import (
-	"komari/database"
+	"komari/database/accounts"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -18,7 +18,7 @@ func AdminAuthMiddleware() gin.HandlerFunc {
 		}
 
 		// Komari is a single user system
-		_, err = database.GetSession(session)
+		_, err = accounts.GetSession(session)
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"status": "error", "error": "Unauthorized."})
 			c.Abort()

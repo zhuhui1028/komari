@@ -1,20 +1,22 @@
 package admin
 
 import (
-	"komari/database"
+	"komari/database/clients"
+	"komari/database/history"
+	"komari/database/models"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
 func AddClient(c *gin.Context) {
-	var config database.ClientConfig
+	var config models.ClientConfig
 	if err := c.ShouldBindJSON(&config); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"status": "error", "error": err.Error()})
 		return
 	}
 
-	uuid, token, err := database.CreateClient(config)
+	uuid, token, err := clients.CreateClient(config)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "error": err.Error()})
 		return
@@ -24,16 +26,18 @@ func AddClient(c *gin.Context) {
 }
 
 func EditClient(c *gin.Context) {
-	var config database.ClientConfig
+	var config models.ClientConfig
+	var client models.Client
+
 	if err := c.ShouldBindJSON(&config); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"status": "error", "error": err.Error()})
 		return
 	}
-	if config.UUID == "" {
+	if client.UUID == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"status": "error", "error": "UUID is required"})
 		return
 	}
-	if config.Token == "" {
+	if client.Token == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"status": "error", "error": "Token is required"})
 		return
 	}
@@ -41,15 +45,14 @@ func EditClient(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"status": "error", "error": "Interval must be greater than to 0"})
 		return
 	}
-	err := database.UpdateClientByUUID(config)
+	err := clients.UpdateClientConfig(config)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "error": err.Error()})
-		return
 	}
 	c.JSON(http.StatusOK, gin.H{"status": "success"})
 }
 func RemoveClient(c *gin.Context) {
-	db := database.GetSQLiteInstance()
+
 	var req struct {
 		UUID string `json:"uuid" binding:"required"`
 	}
@@ -59,32 +62,21 @@ func RemoveClient(c *gin.Context) {
 			"error":  "Invalid or missing UUID",
 		})
 	}
-	_, err := db.Exec("DELETE FROM Clients WHERE UUID = ?", req.UUID)
+	err := clients.DeleteClientConfig(req.UUID)
 	if err != nil {
 		c.JSON(500, gin.H{
 			"status": "error",
-			"error":  "Failed to remove client" + err.Error(),
+			"error":  "Failed to delete client" + err.Error(),
 		})
 		return
 	}
 	c.JSON(200, gin.H{"status": "success"})
 }
 func ClearHistory(c *gin.Context) {
-	db := database.GetSQLiteInstance()
-	var req struct {
-		UUID string `json:"uuid" binding:"required"`
-	}
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(400, gin.H{
-			"status": "error",
-			"error":  "Invalid or missing UUID",
-		})
-	}
-	_, err := db.Exec("DELETE FROM History WHERE Client = ?", req.UUID)
-	if err != nil {
+	if err := history.DeleteAll(); err != nil {
 		c.JSON(500, gin.H{
 			"status": "error",
-			"error":  "Failed to clear history" + err.Error(),
+			"error":  "Failed to delete history" + err.Error(),
 		})
 		return
 	}
@@ -102,12 +94,12 @@ func GetClient(c *gin.Context) {
 	}
 	result := map[string]interface{}{}
 
-	clientBasicInfo, err := database.GetClientBasicInfo(uuid)
+	clientBasicInfo, err := clients.GetClientBasicInfo(uuid)
 	if err.Error() != "sql: no rows in result set" {
 		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "error": err.Error()})
 		return
 	}
-	config, err := database.GetClientConfig(uuid)
+	config, err := clients.GetClientConfig(uuid)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "error": err.Error()})
 		return
@@ -120,22 +112,27 @@ func GetClient(c *gin.Context) {
 	c.JSON(200, result)
 }
 func ListClients(c *gin.Context) {
-	clients, err := database.GetAllClients()
+	cls, err := clients.GetAllClients()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "error": err.Error()})
 		return
 	}
 	result := []map[string]interface{}{}
-	for i := range clients {
-		clientBasicInfo, err := database.GetClientBasicInfo(clients[i].UUID)
+	for i := range cls {
+		clientBasicInfo, err := clients.GetClientBasicInfo(cls[i].UUID)
 		if err.Error() != "sql: no rows in result set" {
 			c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "error": err.Error()})
 			return
 		}
+		config, err := clients.GetClientConfig(cls[i].UUID)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "error": err.Error()})
+			return
+		}
 		result = append(result, map[string]interface{}{
-			"uuid":   clients[i].UUID,
+			"uuid":   cls[i].UUID,
 			"info":   clientBasicInfo,
-			"config": clients[i],
+			"config": config,
 		})
 	}
 	c.JSON(http.StatusOK, result)

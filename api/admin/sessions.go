@@ -1,18 +1,22 @@
 package admin
 
 import (
-	"komari/database"
+	"komari/database/accounts"
 
 	"github.com/gin-gonic/gin"
 )
 
 func GetSessions(c *gin.Context) {
-	sessions, err := database.GetAllSessions()
+
+	ss, err := accounts.GetAllSessions()
 	if err != nil {
-		c.JSON(500, gin.H{"status": "error", "message": err.Error()})
+		c.JSON(500, gin.H{
+			"status": "error",
+			"error":  "Failed to get sessions",
+		})
 		return
 	}
-	c.JSON(200, sessions)
+	c.JSON(200, ss)
 }
 
 func DeleteSession(c *gin.Context) {
@@ -26,7 +30,7 @@ func DeleteSession(c *gin.Context) {
 		})
 		return
 	}
-	err := database.DeleteSession(req.Session)
+	err := accounts.DeleteSession(req.Session)
 	if err != nil {
 		c.JSON(500, gin.H{
 			"status": "error",

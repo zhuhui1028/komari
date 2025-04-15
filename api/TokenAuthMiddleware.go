@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"io"
-	"komari/database"
+	"komari/database/clients"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -64,9 +64,8 @@ func TokenAuthMiddleware() gin.HandlerFunc {
 }
 
 func checkTokenExists(token string) (bool, error) {
-	db := database.GetSQLiteInstance()
-	var uuid string
-	err := db.QueryRow(`SELECT UUID FROM Clients WHERE TOKEN = ?`, token).Scan(&uuid)
+	_, err := clients.GetClientUUIDByToken(token)
+
 	if err == sql.ErrNoRows {
 		return false, nil
 	}

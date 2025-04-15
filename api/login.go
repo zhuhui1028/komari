@@ -3,7 +3,7 @@ package api
 import (
 	"encoding/json"
 	"io"
-	"komari/database"
+	"komari/database/accounts"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -27,9 +27,10 @@ func Login(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"status": "error", "error": "Invalid request body"})
 		return
 	}
-	if uuid, success := database.CheckPassword(data.Username, data.Password); success {
 
-		session, err := database.CreateSession(uuid, 2592000)
+	if uuid, success := accounts.CheckPassword(data.Username, data.Password); success {
+
+		session, err := accounts.CreateSession(uuid, 2592000)
 
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "error": "Failed to create session" + err.Error()})

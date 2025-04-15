@@ -5,10 +5,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"komari/database"
+
+	"komari/database/clients"
 	"komari/ws"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
@@ -29,17 +31,18 @@ func UploadReport(c *gin.Context) {
 		return
 	}
 
-	err = database.SaveReport(data)
+	err = clients.SaveReport(data)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("%v", err)})
 		return
 	}
-	uuid, err := database.GetClientUUIDByToken(data["token"].(string))
+	uuid, err := clients.GetClientUUIDByToken(data["token"].(string))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("%v", err)})
 		return
 	}
 	delete(data, "token")
+	data["time"] = time.Now()
 	ws.LatestReport[uuid] = data
 	//log.Println(string(bodyBytes))
 	c.Request.Body = io.NopCloser(bytes.NewBuffer(bodyBytes)) // Restore the body for further use
@@ -109,7 +112,7 @@ func WebSocketReport(c *gin.Context) {
 		delete(ws.ConnectedClients, token)
 	}()
 
-	clientUUID, err := database.GetClientUUIDByToken(token)
+	clientUUID, err := clients.GetClientUUIDByToken(token)
 	if err != nil {
 		conn.WriteJSON(gin.H{"status": "error", "error": fmt.Sprintf("%v", err)})
 		return
@@ -126,19 +129,20 @@ func WebSocketReport(c *gin.Context) {
 			break
 		}
 
-		report := database.ParseReport(data)
+		report := clients.ParseReport(data)
 
-		err = database.SaveClientReport(clientUUID, report)
+		err = clients.SaveClientReport(clientUUID, report)
 		if err != nil {
 			conn.WriteJSON(gin.H{"status": "error", "error": fmt.Sprintf("%v", err)})
 		}
 
-		uuid, err := database.GetClientUUIDByToken(token)
+		uuid, err := clients.GetClientUUIDByToken(token)
 		if err != nil {
 			conn.WriteJSON(gin.H{"status": "error", "error": fmt.Sprintf("%v", err)})
 			return
 		}
 		delete(data, "token")
+		data["time"] = time.Now()
 		ws.LatestReport[uuid] = data
 	}
 }

@@ -3,7 +3,7 @@ package client
 import (
 	"database/sql"
 	"fmt"
-	"komari/database"
+	"komari/database/clients"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -27,37 +27,14 @@ type RemoteConfig struct {
 
 func GetRemoteConfig(c *gin.Context) {
 	token := c.Query("token")
-	db := database.GetSQLiteInstance()
 
-	clientUUID, err := database.GetClientUUIDByToken(token)
+	clientUUID, err := clients.GetClientUUIDByToken(token)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": fmt.Sprintf("%v", err)})
 		return
 	}
+	config, err := clients.GetClientConfig(clientUUID)
 
-	var config RemoteConfig
-	query := `
-		SELECT CPU, GPU, RAM, SWAP, LOAD, UPTIME, TEMP, OS, DISK, NET, PROCESS, Connections, Interval
-		FROM Clients
-		WHERE UUID = ?
-	`
-	row := db.QueryRow(query, clientUUID)
-
-	err = row.Scan(
-		&config.Cpu,
-		&config.Gpu,
-		&config.Ram,
-		&config.Swap,
-		&config.Load,
-		&config.Uptime,
-		&config.Temperature,
-		&config.Os,
-		&config.Disk,
-		&config.Network,
-		&config.Process,
-		&config.Connections,
-		&config.Interval,
-	)
 	if err == sql.ErrNoRows {
 		c.JSON(http.StatusNotFound, gin.H{"status": "error", "error": "No data found"})
 		return
