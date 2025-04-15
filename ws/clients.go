@@ -1,7 +1,6 @@
 package ws
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/gorilla/websocket"
@@ -30,7 +29,7 @@ func GetClients(c *gin.Context) {
 	for {
 		_, data, err := conn.ReadMessage()
 		if err != nil {
-			log.Println("Error reading message:", err)
+			//log.Println("Error reading message:", err)
 			return
 		}
 		message := string(data)

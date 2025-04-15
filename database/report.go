@@ -1,6 +1,9 @@
 package database
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 type Report struct {
 	UUID        string             `json:"uuid"`
@@ -108,7 +111,7 @@ func SaveClientReport(clientUUID string, report Report) (err error) {
 
 func ParseReport(data map[string]interface{}) (report Report) {
 	report = Report{
-		Token: data["token"].(string),
+		Token: getString(data, "token"),
 		CPU: CPU_Report{
 			Name:  getString(data, "cpu.name"),
 			Cores: getInt(data, "cpu.cores"),
@@ -150,38 +153,70 @@ func ParseReport(data map[string]interface{}) (report Report) {
 	return
 }
 
+// getString 获取嵌套字符串值
 func getString(data map[string]interface{}, key string) string {
-	if val, ok := data[key]; ok {
-		if str, ok := val.(string); ok {
-			return str
-		}
+	val := getNestedValue(data, key)
+	if str, ok := val.(string); ok {
+		return str
 	}
 	return ""
 }
 
+// getInt 获取嵌套整数值
 func getInt(data map[string]interface{}, key string) int {
-	if val, ok := data[key]; ok {
-		if num, ok := val.(float64); ok {
-			return int(num)
-		}
+	val := getNestedValue(data, key)
+	if num, ok := val.(float64); ok {
+		return int(num)
+	}
+	if num, ok := val.(int); ok {
+		return num
 	}
 	return 0
 }
 
+// getInt64 获取嵌套 int64 值
 func getInt64(data map[string]interface{}, key string) int64 {
-	if val, ok := data[key]; ok {
-		if num, ok := val.(float64); ok {
-			return int64(num)
-		}
+	val := getNestedValue(data, key)
+	if num, ok := val.(float64); ok {
+		return int64(num)
+	}
+	if num, ok := val.(int64); ok {
+		return num
 	}
 	return 0
 }
 
+// getFloat 获取嵌套浮点数值
 func getFloat(data map[string]interface{}, key string) float64 {
-	if val, ok := data[key]; ok {
-		if num, ok := val.(float64); ok {
-			return num
-		}
+	val := getNestedValue(data, key)
+	if num, ok := val.(float64); ok {
+		return num
 	}
 	return 0.0
+}
+
+// getNestedValue 通用函数，用于解析嵌套键
+func getNestedValue(data map[string]interface{}, key string) interface{} {
+	keys := strings.Split(key, ".")
+	current := data
+
+	// 遍历所有键，逐步深入嵌套
+	for i, k := range keys[:len(keys)-1] {
+		val, ok := current[k]
+		if !ok {
+			return nil
+		}
+		// 确保当前值是 map 类型
+		nextMap, ok := val.(map[string]interface{})
+		if !ok {
+			return nil
+		}
+		current = nextMap
+
+		// 如果是最后一个键，返回值
+		if i == len(keys)-2 {
+			return current[keys[len(keys)-1]]
+		}
+	}
+	return nil
 }

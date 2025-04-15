@@ -30,7 +30,7 @@ var ServerCmd = &cobra.Command{
 			tokenAuthrized.GET("/getRemoteConfig", client.GetRemoteConfig)
 			tokenAuthrized.GET("/report", client.WebSocketReport) // websocket
 			tokenAuthrized.POST("/uploadBasicInfo", client.UploadBasicInfo)
-			tokenAuthrized.POST("/uploadReport", client.UploadReport)
+			tokenAuthrized.POST("/report", client.UploadReport)
 		}
 
 		adminAuthrized := r.Group("/api/admin", api.AdminAuthMiddleware())
