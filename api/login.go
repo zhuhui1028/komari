@@ -2,8 +2,8 @@ package api
 
 import (
 	"encoding/json"
+	"github.com/akizon77/komari/database/accounts"
 	"io"
-	"komari/database/accounts"
 	"net/http"
 
 	"github.com/gin-gonic/gin"

@@ -1,12 +1,13 @@
 package dbcore
 
 import (
-	"komari/cmd/flags"
-	"komari/database/models"
 	"log"
 	"os"
 	"path/filepath"
 	"sync"
+
+	"github.com/akizon77/komari/cmd/flags"
+	"github.com/akizon77/komari/database/models"
 
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"

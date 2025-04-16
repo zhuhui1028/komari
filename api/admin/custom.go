@@ -2,8 +2,9 @@ package admin
 
 import (
 	"database/sql"
-	"komari/database/custom"
-	"komari/database/models"
+
+	"github.com/akizon77/komari/database/custom"
+	"github.com/akizon77/komari/database/models"
 
 	"log"
 

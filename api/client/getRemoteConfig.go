@@ -3,7 +3,7 @@ package client
 import (
 	"database/sql"
 	"fmt"
-	"komari/database/clients"
+	"github.com/akizon77/komari/database/clients"
 	"net/http"
 
 	"github.com/gin-gonic/gin"

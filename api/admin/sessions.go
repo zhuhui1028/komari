@@ -1,7 +1,7 @@
 package admin
 
 import (
-	"komari/database/accounts"
+	"github.com/akizon77/komari/database/accounts"
 
 	"github.com/gin-gonic/gin"
 )

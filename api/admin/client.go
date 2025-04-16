@@ -1,10 +1,11 @@
 package admin
 
 import (
-	"komari/database/clients"
-	"komari/database/history"
-	"komari/database/models"
 	"net/http"
+
+	"github.com/akizon77/komari/database/clients"
+	"github.com/akizon77/komari/database/history"
+	"github.com/akizon77/komari/database/models"
 
 	"github.com/gin-gonic/gin"
 )

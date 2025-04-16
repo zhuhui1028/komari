@@ -6,11 +6,12 @@ import (
 	"fmt"
 	"io"
 
-	"komari/database/clients"
-	"komari/ws"
 	"log"
 	"net/http"
 	"time"
+
+	"github.com/akizon77/komari/database/clients"
+	"github.com/akizon77/komari/ws"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"

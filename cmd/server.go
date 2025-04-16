@@ -1,12 +1,13 @@
 package cmd
 
 import (
-	"komari/api"
-	"komari/api/admin"
-	"komari/api/client"
-	"komari/cmd/flags"
-	"komari/ws"
 	"net/http"
+
+	"github.com/akizon77/komari/api"
+	"github.com/akizon77/komari/api/admin"
+	"github.com/akizon77/komari/api/client"
+	"github.com/akizon77/komari/cmd/flags"
+	"github.com/akizon77/komari/ws"
 
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/cobra"

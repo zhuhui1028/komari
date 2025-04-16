@@ -5,9 +5,9 @@ import (
 	"encoding/base64"
 	"os"
 
-	"komari/database/dbcore"
-	"komari/database/models"
-	"komari/utils"
+	"github.com/akizon77/komari/database/dbcore"
+	"github.com/akizon77/komari/database/models"
+	"github.com/akizon77/komari/utils"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"

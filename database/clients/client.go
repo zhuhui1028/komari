@@ -1,9 +1,9 @@
 package clients
 
 import (
-	"komari/database/dbcore"
-	"komari/database/models"
-	"komari/utils"
+	"github.com/akizon77/komari/database/dbcore"
+	"github.com/akizon77/komari/database/models"
+	"github.com/akizon77/komari/utils"
 	"time"
 
 	"github.com/google/uuid"

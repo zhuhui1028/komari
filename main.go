@@ -1,10 +1,10 @@
 package main
 
 import (
-	"komari/cmd"
-	"komari/database/accounts"
-	"komari/database/dbcore"
-	"komari/database/history"
+	"github.com/akizon77/komari/cmd"
+	"github.com/akizon77/komari/database/accounts"
+	"github.com/akizon77/komari/database/dbcore"
+	"github.com/akizon77/komari/database/history"
 	"log"
 	"time"
 )

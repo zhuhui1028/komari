@@ -2,10 +2,11 @@ package accounts
 
 import (
 	"errors"
-	"komari/database/dbcore"
-	"komari/database/models"
-	"komari/utils"
 	"time"
+
+	"github.com/akizon77/komari/database/dbcore"
+	"github.com/akizon77/komari/database/models"
+	"github.com/akizon77/komari/utils"
 )
 
 // GetAllSessions 获取所有会话

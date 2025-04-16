@@ -5,8 +5,9 @@ import (
 	"database/sql"
 	"encoding/json"
 	"io"
-	"komari/database/clients"
 	"net/http"
+
+	"github.com/akizon77/komari/database/clients"
 
 	"github.com/gin-gonic/gin"
 )

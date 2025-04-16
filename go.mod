@@ -1,4 +1,4 @@
-module komari
+module github.com/akizon77/komari
 
 go 1.23.2
 

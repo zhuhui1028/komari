@@ -1,8 +1,8 @@
 package custom
 
 import (
-	"komari/database/dbcore"
-	"komari/database/models"
+	"github.com/akizon77/komari/database/dbcore"
+	"github.com/akizon77/komari/database/models"
 )
 
 func Get() (models.Custom, error) {

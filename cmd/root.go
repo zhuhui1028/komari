@@ -2,8 +2,9 @@ package cmd
 
 import (
 	"fmt"
-	"komari/cmd/flags"
 	"os"
+
+	"github.com/akizon77/komari/cmd/flags"
 
 	"github.com/spf13/cobra"
 )

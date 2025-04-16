@@ -2,8 +2,9 @@ package clients
 
 import (
 	"fmt"
-	"komari/database/dbcore"
-	"komari/database/models"
+
+	"github.com/akizon77/komari/database/dbcore"
+	"github.com/akizon77/komari/database/models"
 
 	"gorm.io/gorm"
 )
