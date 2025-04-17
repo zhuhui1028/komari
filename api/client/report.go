@@ -8,11 +8,10 @@ import (
 
 	"log"
 	"net/http"
-	"time"
 
 	"github.com/akizon77/komari/database/clients"
 	"github.com/akizon77/komari/ws"
-
+	"github.com/akizon77/komari_common"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 )
@@ -31,21 +30,22 @@ func UploadReport(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
 		return
 	}
+	// Save report to database
+	var report komari_common.Report
+	err = json.Unmarshal(bodyBytes, &report)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
+		return
+	}
+	err = clients.SaveClientReport(report.UUID, report)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("%v", err)})
+		return
+	}
+	// Update report with method and token
+	report.Token = ""
+	ws.LatestReport[report.UUID] = report
 
-	err = clients.SaveReport(data)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("%v", err)})
-		return
-	}
-	uuid, err := clients.GetClientUUIDByToken(data["token"].(string))
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("%v", err)})
-		return
-	}
-	delete(data, "token")
-	data["time"] = time.Now()
-	ws.LatestReport[uuid] = data
-	//log.Println(string(bodyBytes))
 	c.Request.Body = io.NopCloser(bytes.NewBuffer(bodyBytes)) // Restore the body for further use
 	c.JSON(200, gin.H{"status": "success"})
 }
@@ -125,12 +125,11 @@ func WebSocketReport(c *gin.Context) {
 			break
 		}
 
-		err = json.Unmarshal(message, &data)
+		report := komari_common.Report{}
+		err = json.Unmarshal(message, &report)
 		if err != nil {
 			break
 		}
-
-		report := clients.ParseReport(data)
 
 		err = clients.SaveClientReport(clientUUID, report)
 		if err != nil {
@@ -142,8 +141,7 @@ func WebSocketReport(c *gin.Context) {
 			conn.WriteJSON(gin.H{"status": "error", "error": fmt.Sprintf("%v", err)})
 			return
 		}
-		delete(data, "token")
-		data["time"] = time.Now()
-		ws.LatestReport[uuid] = data
+		report.Token = ""
+		ws.LatestReport[uuid] = report
 	}
 }

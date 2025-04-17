@@ -7,16 +7,21 @@ import (
 )
 
 func GetMe(c *gin.Context) {
-	userName := "Guest"
 	session, err := c.Cookie("session_token")
 	if err != nil {
-		c.JSON(200, gin.H{"username": userName})
+		c.JSON(200, gin.H{"username": "Guest"})
 		return
 	}
-	userName, err = accounts.GetSession(session)
+	uuid, err := accounts.GetSession(session)
 	if err != nil {
-		userName = "Guest"
+		c.JSON(200, gin.H{"username": "Guest"})
+		return
 	}
-	c.JSON(200, gin.H{"username": userName})
+	user, err := accounts.GetUserByUUID(uuid)
+	if err != nil {
+		c.JSON(200, gin.H{"username": "Guest"})
+		return
+	}
+	c.JSON(200, gin.H{"username": user.Username})
 
 }

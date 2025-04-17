@@ -1,10 +1,12 @@
 package clients
 
 import (
+	"time"
+
 	"github.com/akizon77/komari/database/dbcore"
 	"github.com/akizon77/komari/database/models"
 	"github.com/akizon77/komari/utils"
-	"time"
+	"github.com/akizon77/komari_common"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -13,7 +15,7 @@ import (
 // 删除指定 UUID 的客户端配置
 func DeleteClientConfig(clientUuid string) error {
 	db := dbcore.GetDBInstance()
-	err := db.Delete(&models.ClientConfig{ClientUUID: clientUuid}).Error
+	err := db.Delete(&komari_common.ClientConfig{ClientUUID: clientUuid}).Error
 	if err != nil {
 		return err
 	}
@@ -31,7 +33,7 @@ func UpdateOrInsertBasicInfo(cbi ClientBasicInfo) error {
 }
 
 // 更新客户端设置
-func UpdateClientConfig(config models.ClientConfig) error {
+func UpdateClientConfig(config komari_common.ClientConfig) error {
 	db := dbcore.GetDBInstance()
 	err := db.Save(&config).Error
 	if err != nil {
@@ -40,10 +42,19 @@ func UpdateClientConfig(config models.ClientConfig) error {
 	return nil
 }
 
-// UpdateClientByUUID 更新指定 UUID 的客户端配置
-func UpdateClientByUUID(config models.Client) error {
+func EditClientName(clientUUID, clientName string) error {
 	db := dbcore.GetDBInstance()
-	result := db.Model(&models.Client{}).Where("uuid = ?", config.UUID).Updates(config)
+	err := db.Model(&models.Client{}).Where("uuid = ?", clientUUID).Update("client_name", clientName).Error
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// UpdateClientByUUID 更新指定 UUID 的客户端配置
+func UpdateClientByUUID(config komari_common.ClientConfig) error {
+	db := dbcore.GetDBInstance()
+	result := db.Model(&komari_common.ClientConfig{}).Where("client_uuid = ?", config.ClientUUID).Updates(config)
 	if result.Error != nil {
 		return result.Error
 	}
@@ -53,19 +64,17 @@ func UpdateClientByUUID(config models.Client) error {
 	return nil
 }
 
-// GetClientUUIDByToken 根据 Token 获取客户端 UUID
-func GetClientUUIDByToken(token string) (uuid string, err error) {
+func EditClientToken(clientUUID, token string) error {
 	db := dbcore.GetDBInstance()
-	var client models.Client
-	err = db.Where("token = ?", token).First(&client).Error
+	err := db.Model(&models.Client{}).Where("uuid = ?", clientUUID).Update("token", token).Error
 	if err != nil {
-		return "", err
+		return err
 	}
-	return client.UUID, nil
+	return nil
 }
 
 // CreateClient 创建新客户端
-func CreateClient(config models.ClientConfig) (clientUUID, token string, err error) {
+func CreateClient(config komari_common.ClientConfig) (clientUUID, token string, err error) {
 	db := dbcore.GetDBInstance()
 	token = utils.GenerateToken()
 	clientUUID = uuid.New().String()
@@ -76,6 +85,8 @@ func CreateClient(config models.ClientConfig) (clientUUID, token string, err err
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}
+
+	config.ClientUUID = clientUUID
 
 	err = db.Create(&client).Error
 	if err != nil {
@@ -98,40 +109,49 @@ func GetAllClients() (clients []models.Client, err error) {
 	return clients, nil
 }
 
-// GetClientConfig 获取指定 UUID 的客户端配置
-func GetClientConfig(uuid string) (client models.Client, err error) {
+func GetClientByUUID(uuid string) (client models.Client, err error) {
 	db := dbcore.GetDBInstance()
 	err = db.Where("uuid = ?", uuid).First(&client).Error
 	if err != nil {
-		return client, err
+		return models.Client{}, err
+	}
+	return client, nil
+}
+
+// GetClientConfig 获取指定 UUID 的客户端配置
+func GetClientConfig(uuid string) (client komari_common.ClientConfig, err error) {
+	db := dbcore.GetDBInstance()
+	err = db.Where("client_uuid = ?", uuid).First(&client).Error
+	if err != nil {
+		return komari_common.ClientConfig{}, err
 	}
 	return client, nil
 }
 
 // ClientBasicInfo 客户端基本信息（假设的结构体，需根据实际定义调整）
 type ClientBasicInfo struct {
-	CPU       CPUReport       `json:"cpu"`
-	GPU       GPUReport       `json:"gpu"`
-	IpAddress IPAddressReport `json:"ip"`
-	OS        string          `json:"os"`
+	CPU       komari_common.CPUReport `json:"cpu"`
+	GPU       komari_common.GPUReport `json:"gpu"`
+	IpAddress komari_common.IPAddress `json:"ip"`
+	OS        string                  `json:"os"`
 }
 
 // GetClientBasicInfo 获取指定 UUID 的客户端基本信息
 func GetClientBasicInfo(uuid string) (client ClientBasicInfo, err error) {
 	db := dbcore.GetDBInstance()
-	var clientInfo models.ClientInfo
+	var clientInfo komari_common.ClientInfo
 	err = db.Where("client_uuid = ?", uuid).First(&clientInfo).Error
 	if err != nil {
 		return client, err
 	}
 
 	client = ClientBasicInfo{
-		CPU: CPUReport{
+		CPU: komari_common.CPUReport{
 			Name:  clientInfo.CPUNAME,
 			Arch:  clientInfo.CPUARCH,
 			Cores: clientInfo.CPUCORES,
 		},
-		GPU: GPUReport{
+		GPU: komari_common.GPUReport{
 			Name: clientInfo.GPUNAME,
 		},
 		OS: clientInfo.OS,

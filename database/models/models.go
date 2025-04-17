@@ -13,31 +13,13 @@ type Client struct {
 	UpdatedAt  time.Time
 }
 
-// ClientConfig stores client monitoring preferences
-type ClientConfig struct {
-	ClientUUID  string `gorm:"type:uuid;primaryKey;foreignKey:ClientUUID;references:UUID;constraint:OnDelete:CASCADE"`
-	CPU         bool   `gorm:"default:true"`
-	GPU         bool   `gorm:"default:true"`
-	RAM         bool   `gorm:"default:true"`
-	SWAP        bool   `gorm:"default:true"`
-	LOAD        bool   `gorm:"default:true"`
-	UPTIME      bool   `gorm:"default:true"`
-	TEMP        bool   `gorm:"default:true"`
-	OS          bool   `gorm:"default:true"`
-	DISK        bool   `gorm:"default:true"`
-	NET         bool   `gorm:"default:true"`
-	PROCESS     bool   `gorm:"default:true"`
-	Connections bool   `gorm:"default:true"`
-	Interval    int    `gorm:"default:3;check:Interval >= 1"` // Ensure positive interval
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
-}
-
 // User represents an authenticated user
 type User struct {
 	UUID      string `gorm:"type:uuid;primaryKey"`
 	Username  string `gorm:"type:varchar(50);unique;not null"`
 	Passwd    string `gorm:"type:varchar(255);not null"` // Hashed password
+	SSOType   string `gorm:"type:varchar(20)"`           // e.g., "github", "google"
+	SSOID     string `gorm:"type:varchar(100)"`          // OAuth provider's user ID
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }
@@ -75,24 +57,25 @@ type History struct {
 	ConnectionsUDP int
 }
 
-// ClientInfo stores static client information
-type ClientInfo struct {
-	ClientUUID string `gorm:"type:uuid;primaryKey;foreignKey:ClientUUID;references:UUID;constraint:OnDelete:CASCADE"`
-	CPUNAME    string `gorm:"type:varchar(100)"`
-	CPUARCH    string `gorm:"type:varchar(50)"`
-	CPUCORES   int
-	OS         string `gorm:"type:varchar(100)"`
-	GPUNAME    string `gorm:"type:varchar(100)"`
-	CreatedAt  time.Time
-	UpdatedAt  time.Time
-}
-
 // Config stores site-wide settings
 type Config struct {
-	ID        uint   `gorm:"primaryKey;autoIncrement"`
-	Sitename  string `gorm:"type:varchar(100);not null"`
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	ID          uint   `gorm:"primaryKey;autoIncrement"`
+	Sitename    string `gorm:"type:varchar(100);not null"`
+	Description string `gorm:"type:text"`
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
+}
+
+// OAuthConfig stores OAuth provider configurations
+type OAuthConfig struct {
+	ID           uint   `gorm:"primaryKey;autoIncrement"`
+	Provider     string `gorm:"type:varchar(20);not null;unique"` // e.g., "github"
+	ClientID     string `gorm:"type:varchar(255);not null"`
+	ClientSecret string `gorm:"type:varchar(255);not null"`
+	RedirectURI  string `gorm:"type:varchar(255);not null"`
+	Enabled      bool   `gorm:"default:false"`
+	CreatedAt    time.Time
+	UpdatedAt    time.Time
 }
 
 // Custom stores custom configurations

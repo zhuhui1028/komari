@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"github.com/akizon77/komari/database/clients"
+	"gorm.io/gorm"
 
 	"github.com/gin-gonic/gin"
 )
@@ -68,6 +69,9 @@ func checkTokenExists(token string) (bool, error) {
 	_, err := clients.GetClientUUIDByToken(token)
 
 	if err == sql.ErrNoRows {
+		return false, nil
+	}
+	if err == gorm.ErrRecordNotFound {
 		return false, nil
 	}
 	if err != nil {
