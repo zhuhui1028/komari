@@ -44,9 +44,6 @@ var ServerCmd = &cobra.Command{
 			adminAuthrized.POST("/clearHistory", admin.ClearHistory)
 			adminAuthrized.POST("/removeClient", admin.RemoveClient)
 
-			// custom
-			adminAuthrized.GET("/custom", admin.GetCustom)
-			adminAuthrized.POST("/custom", admin.EditCustom)
 			// settings
 			adminAuthrized.GET("/settings", admin.GetSettings)
 			adminAuthrized.POST("/settings", admin.EditSettings)
